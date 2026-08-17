@@ -1,99 +1,74 @@
+import { Link } from "react-router-dom";
+
 function ProjectCard({
     project,
     user,
-    handleUpdateProject,
-    handleDeleteProject,
-    setProposalProjectId,
-    handleViewProposals,
-    setReviewProjectId,
-    reviewedProjects
+    setProposalProjectId
 }) {
+
     return (
         <div>
 
-            <h2>{project.title}</h2>
+            <h2>
+                {project.title}
+            </h2>
 
-            <p>{project.description}</p>
+
+            <p>
+                {project.description}
+            </p>
+
 
             <p>
                 Budget: ₹{project.budget}
             </p>
 
+
             <p>
-                Client: {project.client?.name}
+                Client:{" "}
+                {project.client?.name ||
+                    "Unknown"}
             </p>
+
 
             <p>
                 Freelancer:{" "}
-                {project.freelancer
-                    ? "Hired"
-                    : "Not hired"}
+                {project.freelancer?.name ||
+                    "Not hired"}
             </p>
+
 
             <p>
                 Status: {project.status}
             </p>
 
-            {user?.role === "client" &&
-                project.client?._id === user.id && (
-                    <>
-                        <button
-                            onClick={() =>
-                                handleUpdateProject(project)
-                            }
-                        >
-                            Edit
-                        </button>
 
-                        {!project.freelancer && (
-                            <button
-                                onClick={() =>
-                                    handleDeleteProject(project._id)
-                                }
-                            >
-                                Delete
-                            </button>
-                        )}
+            <Link
+                to={`/projects/${project._id}`}
+            >
+                View Details
+            </Link>
 
-                        <button
-                            onClick={() =>
-                                handleViewProposals(project._id)
-                            }
-                        >
-                            View Proposals
-                        </button>
-                    </>
-                )}
 
             {user?.role === "freelancer" &&
                 project.client?._id !== user.id &&
                 project.status === "open" &&
                 !project.freelancer && (
+
                     <button
+                        type="button"
                         onClick={() =>
-                            setProposalProjectId(project._id)
+                            setProposalProjectId(
+                                project._id
+                            )
                         }
                     >
                         Apply
                     </button>
+
                 )}
 
-            {project.status === "completed" &&
-                !reviewedProjects.includes(project._id) &&
-                (
-                    project.client?._id === user?.id ||
-                    project.freelancer?._id === user?.id ||
-                    project.freelancer === user?.id
-                ) && (
-                    <button
-                        type="button"
-                        onClick={() =>
-                            setReviewProjectId(project._id)
-                        }
-                    >
-                        Leave Review
-                    </button>
-                )}
+
             <hr />
 
         </div>

@@ -9,15 +9,21 @@ export const getProjects = (params = {}) => {
         }
     });
 
-    const queryString = query.toString();
 
+    
+    
+    const queryString = query.toString();
+    
     return apiRequest(
         queryString
-            ? `/projects?${queryString}`
-            : "/projects"
+        ? `/projects?${queryString}`
+        : "/projects"
     );
 };
 
+export const getProject = (projectId) => {
+    return apiRequest(`/projects/${projectId}`);
+};
 
 export const createProject = (projectData) => {
     return apiRequest("/projects", {

@@ -167,6 +167,7 @@ router.get("/", protect, async (req, res, next) => {
 });
 
 
+
 router.get(
     "/recommended",
     protect,
@@ -228,6 +229,46 @@ router.get(
 
         } catch (error) {
             next(error);
+        }
+    }
+);
+
+
+router.get(
+    "/:id",
+    protect,
+    validateObjectId("id"),
+    async (req, res, next) => {
+
+        try {
+
+            const project =
+                await Project.findById(req.params.id)
+                    .populate(
+                        "client",
+                        "name email role"
+                    )
+                    .populate(
+                        "freelancer",
+                        "name email role"
+                    );
+
+            if (!project) {
+
+                return res.status(404).json({
+                    message: "Project not found"
+                });
+
+            }
+
+            res.status(200).json({
+                project
+            });
+
+        } catch (error) {
+
+            next(error);
+
         }
     }
 );

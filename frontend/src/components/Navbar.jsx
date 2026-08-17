@@ -7,11 +7,12 @@ function Navbar() {
     const { user, setUser } = useAuth();
     const navigate = useNavigate();
 
+
     const handleLogout = async () => {
 
         try {
 
-            await fetch(
+            const response = await fetch(
                 `${API_URL}/auth/logout`,
                 {
                     method: "POST",
@@ -19,9 +20,18 @@ function Navbar() {
                 }
             );
 
+            if (!response.ok) {
+                console.error(
+                    "Logout request failed"
+                );
+            }
+
         } catch (error) {
 
-            console.error("Logout error:", error);
+            console.error(
+                "Logout error:",
+                error
+            );
 
         } finally {
 
@@ -31,36 +41,58 @@ function Navbar() {
         }
     };
 
+
     return (
         <nav>
-
-            <h2>FreelanceHub</h2>
-
-            {user && (
-                <p>
-                    Welcome, {user.name}
-                </p>
-            )}
 
             <div>
 
                 <Link to="/">
-                    Home
+                    <h2>FreelanceHub</h2>
                 </Link>
-
-                <Link to="/projects">
-                    Projects
-                </Link>
-
-                <Link to="/profile">
-                    Profile
-                </Link>
-
-                <button onClick={handleLogout}>
-                    Logout
-                </button>
 
             </div>
+
+
+            {user && (
+                <div>
+
+                    <span>
+                        Welcome, {user.name}
+                    </span>
+
+
+                    <Link to="/">
+                        Dashboard
+                    </Link>
+
+
+                    <Link to="/projects">
+                        Projects
+                    </Link>
+
+
+                    {user.role === "freelancer" && (
+                        <Link to="/my-proposals">
+                            My Proposals
+                        </Link>
+                    )}
+
+
+                    <Link to="/profile">
+                        Profile
+                    </Link>
+
+
+                    <button
+                        type="button"
+                        onClick={handleLogout}
+                    >
+                        Logout
+                    </button>
+
+                </div>
+            )}
 
         </nav>
     );

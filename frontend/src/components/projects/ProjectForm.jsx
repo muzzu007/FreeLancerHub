@@ -1,5 +1,4 @@
 function ProjectForm({
-    editingId,
     title,
     description,
     budget,
@@ -7,25 +6,22 @@ function ProjectForm({
     setTitle,
     setDescription,
     setBudget,
-    handleCreateProject,
-    handleUpdateProject,
-    handleCancelEdit
+    handleCreateProject
 }) {
-    const handleSubmit = editingId
-        ? handleUpdateProject
-        : handleCreateProject;
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleCreateProject}>
 
             <h2>
-                {editingId
-                    ? "Edit Project"
-                    : "Create Project"}
+                Create Project
             </h2>
 
+
             <div>
-                <label>Title</label>
+
+                <label>
+                    Title
+                </label>
 
                 <input
                     type="text"
@@ -33,22 +29,36 @@ function ProjectForm({
                     onChange={(event) =>
                         setTitle(event.target.value)
                     }
+                    required
                 />
+
             </div>
 
+
             <div>
-                <label>Description</label>
+
+                <label>
+                    Description
+                </label>
 
                 <textarea
                     value={description}
                     onChange={(event) =>
-                        setDescription(event.target.value)
+                        setDescription(
+                            event.target.value
+                        )
                     }
+                    required
                 />
+
             </div>
 
+
             <div>
-                <label>Budget</label>
+
+                <label>
+                    Budget
+                </label>
 
                 <input
                     type="number"
@@ -56,30 +66,21 @@ function ProjectForm({
                     onChange={(event) =>
                         setBudget(event.target.value)
                     }
+                    min="1"
+                    required
                 />
+
             </div>
+
 
             <button
                 type="submit"
                 disabled={creating}
             >
                 {creating
-                    ? editingId
-                        ? "Updating..."
-                        : "Creating..."
-                    : editingId
-                        ? "Update Project"
-                        : "Create Project"}
+                    ? "Creating..."
+                    : "Create Project"}
             </button>
-
-            {editingId && (
-                <button
-                    type="button"
-                    onClick={handleCancelEdit}
-                >
-                    Cancel
-                </button>
-            )}
 
         </form>
     );

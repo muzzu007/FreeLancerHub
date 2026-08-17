@@ -15,6 +15,8 @@ import PublicRoute from "./components/PublicRoute";
 import Home from "./pages/Home";
 import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
+import MyProposals from "./pages/MyProposals";
+import ProjectDetails from "./pages/ProjectDetails";
 
 function App() {
     return (
@@ -52,6 +54,16 @@ function App() {
                             <Route
                                 path="/projects"
                                 element={<Projects />}
+                            />
+
+                            <Route
+                                path="/projects/:projectId"
+                                element={<ProjectDetails />}
+                            />
+
+                            <Route
+                                path="/my-proposals"
+                                element={<MyProposals />}
                             />
 
                             <Route
