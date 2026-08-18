@@ -5,7 +5,7 @@ import ProjectForm from "../components/projects/ProjectForm";
 import ProjectList from "../components/projects/ProjectList";
 import ProposalForm from "../components/projects/ProposalForm";
 import ProjectFilters from "../components/projects/ProjectFilters";
-import MyProposals from "../pages/MyProposals";
+
 
 import {
     getProjects,
@@ -47,6 +47,7 @@ function Projects() {
 
     const [budget, setBudget] =
         useState("");
+    const [skills, setSkills] = useState([]);
 
     const [creating, setCreating] =
         useState(false);
@@ -286,7 +287,8 @@ function Projects() {
                     await createProject({
                         title,
                         description,
-                        budget
+                        budget,
+                        skills
                     });
 
                 const data =
@@ -431,10 +433,12 @@ function Projects() {
                     title={title}
                     description={description}
                     budget={budget}
+                    skills={skills} 
                     creating={creating}
                     setTitle={setTitle}
                     setDescription={setDescription}
                     setBudget={setBudget}
+                    setSkills={setSkills}
                     handleCreateProject={handleCreateProject}
                 />
 
@@ -446,16 +450,7 @@ function Projects() {
             </h1>
 
 
-            {/* ---------------------------------------- */}
-            {/* MY PROPOSALS */}
-            {/* ---------------------------------------- */}
-
-            {user?.role === "freelancer" && (
-
-                <MyProposals />
-
-            )}
-
+          
 
             {/* ---------------------------------------- */}
             {/* FILTERS */}
@@ -561,44 +556,27 @@ function Projects() {
             )}
 
 
+
             {/* ---------------------------------------- */}
-            {/* PROPOSAL FORM */}
+            {/* PROPOSAL FORM (inline) */}
             {/* ---------------------------------------- */}
 
-            <ProposalForm
-                proposalProjectId={
-                    proposalProjectId
-                }
-
-                projects={projects}
-
-                bidAmount={bidAmount}
-                coverLetter={coverLetter}
-
-                submittingProposal={
-                    submittingProposal
-                }
-
-                setBidAmount={
-                    setBidAmount
-                }
-
-                setCoverLetter={
-                    setCoverLetter
-                }
-
-                handleSubmitProposal={
-                    handleSubmitProposal
-                }
-
-                handleCancelProposal={() => {
-
-                    setProposalProjectId(null);
-                    setBidAmount("");
-                    setCoverLetter("");
-
-                }}
-            />
+            {proposalProjectId && (
+                <ProposalForm
+                    project={projects.find(p => p._id === proposalProjectId)}  // ✅ find the project
+                    bidAmount={bidAmount}
+                    coverLetter={coverLetter}
+                    submittingProposal={submittingProposal}
+                    setBidAmount={setBidAmount}
+                    setCoverLetter={setCoverLetter}
+                    handleSubmitProposal={handleSubmitProposal}
+                    handleCancelProposal={() => {
+                        setProposalProjectId(null);
+                        setBidAmount("");
+                        setCoverLetter("");
+                    }}
+                />
+            )}
 
         </div>
     );

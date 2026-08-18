@@ -3,27 +3,29 @@ import { useAuth } from "../../context/AuthContext";
 import apiRequest from "../../services/apiRequest";
 import StatCard from "./StatCard";
 
-
 function ClientDashboard() {
 
     const { user } = useAuth();
 
-    const [projects, setProjects] = useState([]);
+    const [stats, setStats] = useState({
+        totalProjects: 0,
+        openProjects: 0,
+        inProgressProjects: 0,
+        completedProjects: 0,
+        cancelledProjects: 0
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-
     useEffect(() => {
 
-        const loadProjects = async () => {
+        const loadDashboard = async () => {
 
             try {
 
-                const response =
-                    await apiRequest("/projects");
+                const response = await apiRequest("/users/dashboard/client");
 
-                const data =
-                    await response.json();
+                const data = await response.json();
 
                 if (!response.ok) {
                     setError(
@@ -33,15 +35,18 @@ function ClientDashboard() {
                     return;
                 }
 
-                setProjects(data.projects || []);
+                setStats({
+                    totalProjects: data.totalProjects || 0,
+                    openProjects: data.openProjects || 0,
+                    inProgressProjects: data.inProgressProjects || 0,
+                    completedProjects: data.completedProjects || 0,
+                    cancelledProjects: data.cancelledProjects || 0
+                });
 
             } catch (error) {
 
                 console.error(error);
-
-                setError(
-                    "Unable to reach server"
-                );
+                setError("Unable to reach server");
 
             } finally {
 
@@ -50,9 +55,8 @@ function ClientDashboard() {
             }
         };
 
-
         if (user?.id) {
-            loadProjects();
+            loadDashboard();
         }
 
     }, [user]);
@@ -62,72 +66,42 @@ function ClientDashboard() {
         return <p>Loading dashboard...</p>;
     }
 
-
     if (error) {
         return <p>{error}</p>;
     }
 
 
-    const myProjects = projects.filter(
-        (project) =>
-            project.client?._id === user?.id
-    );
-
-
-    const openProjects = myProjects.filter(
-        (project) =>
-            project.status === "open"
-    );
-
-
-    const activeProjects = myProjects.filter(
-        (project) =>
-            project.status === "in-progress"
-    );
-
-
-    const completedProjects = myProjects.filter(
-        (project) =>
-            project.status === "completed"
-    );
-
-
     return (
         <div>
-
-            <h1>
-                Welcome, {user?.name}
-            </h1>
-
-            <p>
-                Client Dashboard
-            </p>
-
+            <h1>Welcome, {user?.name}</h1>
+            <p>Client Dashboard</p>
 
             <div>
-
                 <StatCard
                     title="Total Projects"
-                    value={myProjects.length}
+                    value={stats.totalProjects}
                 />
 
                 <StatCard
                     title="Open Projects"
-                    value={openProjects.length}
+                    value={stats.openProjects}
                 />
 
                 <StatCard
                     title="Active Projects"
-                    value={activeProjects.length}
+                    value={stats.inProgressProjects}
                 />
 
                 <StatCard
                     title="Completed Projects"
-                    value={completedProjects.length}
+                    value={stats.completedProjects}
                 />
 
+                <StatCard
+                    title="Cancelled Projects"
+                    value={stats.cancelledProjects}
+                />
             </div>
-
         </div>
     );
 }

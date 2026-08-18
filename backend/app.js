@@ -43,13 +43,13 @@ app.use("/users",userRoutes);
 app.use("/projects",projectRoutes);
 app.use("/proposals", proposalRoutes);
 app.use("/reviews", reviewRoutes);
-app.use(errorHandler);
 app.use("/admin", adminRoutes);
 app.get("/", (req,res)=>{
     res.json({
         message: "Freelance hub is running",
     });
 });
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 

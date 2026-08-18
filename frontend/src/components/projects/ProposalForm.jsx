@@ -1,5 +1,5 @@
 function ProposalForm({
-    project,
+    project,                // ✅ single project object
     bidAmount,
     coverLetter,
     submittingProposal,
@@ -13,10 +13,8 @@ function ProposalForm({
         return null;
     }
 
-
     return (
         <form onSubmit={handleSubmitProposal}>
-
             <h2>Submit Proposal</h2>
 
             <p>
@@ -24,43 +22,31 @@ function ProposalForm({
                 <strong>{project.title}</strong>
             </p>
 
-
             <div>
-
-                <label>
-                    Bid Amount
-                </label>
-
+                <label>Bid Amount</label>
                 <input
                     type="number"
                     value={bidAmount}
                     onChange={(event) =>
-                        setBidAmount(
-                            event.target.value
-                        )
+                        setBidAmount(event.target.value)
                     }
+                    min="1"
+                    required
                 />
-
             </div>
 
-
             <div>
-
-                <label>
-                    Cover Letter
-                </label>
-
+                <label>Cover Letter</label>
                 <textarea
                     value={coverLetter}
                     onChange={(event) =>
-                        setCoverLetter(
-                            event.target.value
-                        )
+                        setCoverLetter(event.target.value)
                     }
+                    minLength={20}
+                    rows={5}
+                    required
                 />
-
             </div>
-
 
             <button
                 type="submit"
@@ -71,7 +57,6 @@ function ProposalForm({
                     : "Submit Proposal"}
             </button>
 
-
             <button
                 type="button"
                 onClick={handleCancelProposal}
@@ -79,7 +64,6 @@ function ProposalForm({
             >
                 Cancel
             </button>
-
         </form>
     );
 }

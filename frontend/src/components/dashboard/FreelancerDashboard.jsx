@@ -3,29 +3,30 @@ import { useAuth } from "../../context/AuthContext";
 import apiRequest from "../../services/apiRequest";
 import StatCard from "./StatCard";
 
-
 function FreelancerDashboard() {
 
     const { user } = useAuth();
 
-    const [proposals, setProposals] = useState([]);
+    const [stats, setStats] = useState({
+        totalProposals: 0,
+        pendingProposals: 0,
+        acceptedProposals: 0,
+        rejectedProposals: 0,
+        activeProjects: 0,
+        completedProjects: 0
+    });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-
     useEffect(() => {
 
-        const loadProposals = async () => {
+        const loadDashboard = async () => {
 
             try {
 
-                const response =
-                    await apiRequest(
-                        "/proposals/my"
-                    );
+                const response = await apiRequest("/users/dashboard/freelancer");
 
-                const data =
-                    await response.json();
+                const data = await response.json();
 
                 if (!response.ok) {
                     setError(
@@ -35,17 +36,24 @@ function FreelancerDashboard() {
                     return;
                 }
 
-                setProposals(
-                    data.proposals || []
-                );
+                setStats({
+                    totalProposals: data.totalProposals || 0,
+                    pendingProposals: data.pendingProposals || 0,
+                    acceptedProposals: data.acceptedProposals || 0,
+                    rejectedProposals: data.rejectedProposals || 0,
+                    // ✅ FIX: Backend sends full project arrays, so we take .length
+                    activeProjects: Array.isArray(data.activeProjects) 
+                        ? data.activeProjects.length 
+                        : 0,
+                    completedProjects: Array.isArray(data.completedProjects) 
+                        ? data.completedProjects.length 
+                        : 0
+                });
 
             } catch (error) {
 
                 console.error(error);
-
-                setError(
-                    "Unable to reach server"
-                );
+                setError("Unable to reach server");
 
             } finally {
 
@@ -54,9 +62,8 @@ function FreelancerDashboard() {
             }
         };
 
-
         if (user?.id) {
-            loadProposals();
+            loadDashboard();
         }
 
     }, [user]);
@@ -66,77 +73,47 @@ function FreelancerDashboard() {
         return <p>Loading dashboard...</p>;
     }
 
-
     if (error) {
         return <p>{error}</p>;
     }
 
 
-    const pending = proposals.filter(
-        (proposal) =>
-            proposal.status === "pending"
-    );
-
-
-    const accepted = proposals.filter(
-        (proposal) =>
-            proposal.status === "accepted"
-    );
-
-
-    const rejected = proposals.filter(
-        (proposal) =>
-            proposal.status === "rejected"
-    );
-
-
-    const withdrawn = proposals.filter(
-        (proposal) =>
-            proposal.status === "withdrawn"
-    );
-
-
     return (
         <div>
-
-            <h1>
-                Welcome, {user?.name}
-            </h1>
-
-            <p>
-                Freelancer Dashboard
-            </p>
-
+            <h1>Welcome, {user?.name}</h1>
+            <p>Freelancer Dashboard</p>
 
             <div>
-
                 <StatCard
                     title="Total Proposals"
-                    value={proposals.length}
+                    value={stats.totalProposals}
                 />
 
                 <StatCard
                     title="Pending"
-                    value={pending.length}
+                    value={stats.pendingProposals}
                 />
 
                 <StatCard
                     title="Accepted"
-                    value={accepted.length}
+                    value={stats.acceptedProposals}
                 />
 
                 <StatCard
                     title="Rejected"
-                    value={rejected.length}
+                    value={stats.rejectedProposals}
                 />
 
                 <StatCard
-                    title="Withdrawn"
-                    value={withdrawn.length}
+                    title="Active Projects"
+                    value={stats.activeProjects}
                 />
 
+                <StatCard
+                    title="Completed Projects"
+                    value={stats.completedProjects}
+                />
             </div>
-
         </div>
     );
 }

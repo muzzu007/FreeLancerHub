@@ -78,6 +78,10 @@ function Navbar() {
                         </Link>
                     )}
 
+                    {/* ✅ Admin link */}
+                    {user.role === "admin" && (
+                        <Link to="/admin/users">Admin Panel</Link>
+                    )}
 
                     <Link to="/profile">
                         Profile

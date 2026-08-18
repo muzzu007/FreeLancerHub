@@ -1,11 +1,15 @@
+import SkillsSelect from "../common/SkillsSelect";
+
 function ProjectForm({
     title,
     description,
     budget,
+    skills = [],
     creating,
     setTitle,
     setDescription,
     setBudget,
+    setSkills,
     handleCreateProject
 }) {
 
@@ -68,6 +72,13 @@ function ProjectForm({
                     }
                     min="1"
                     required
+                />
+
+                {/* ✅ Skills section */}
+                <SkillsSelect
+                    selectedSkills={skills}
+                    onChange={setSkills}
+                    label="Required Skills"
                 />
 
             </div>
