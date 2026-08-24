@@ -12,7 +12,7 @@ const proposalRoutes = require("./routes/proposal");
 const errorHandler = require("./middleware/errorMiddleware");
 const reviewRoutes = require("./routes/review");
 const adminRoutes = require("./routes/admin");
-
+const chatRoutes = require("./routes/chat");
 
 
 const app = express();
@@ -44,6 +44,7 @@ app.use("/projects",projectRoutes);
 app.use("/proposals", proposalRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/admin", adminRoutes);
+app.use("/conversations", chatRoutes);
 app.get("/", (req,res)=>{
     res.json({
         message: "Freelance hub is running",

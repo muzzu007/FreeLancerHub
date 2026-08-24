@@ -1,3 +1,5 @@
+import { Search, X, Filter } from "lucide-react";
+
 function ProjectFilters({
     search,
     minBudget,
@@ -15,136 +17,130 @@ function ProjectFilters({
     handleClearFilters
 }) {
     return (
-        <div>
-
-            <h2>Find Projects</h2>
-
-            <div>
-                <label>Search</label>
-
-                <input
-                    type="text"
-                    value={search}
-                    placeholder="Search projects..."
-                    onChange={(event) =>
-                        setSearch(event.target.value)
-                    }
-                />
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <div className="flex items-center gap-2 mb-4">
+                <Filter size={20} className="text-[#635bff]" />
+                <h2 className="text-lg font-semibold text-gray-800">Find Projects</h2>
             </div>
 
-            <div>
-                <label>Minimum Budget</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {/* Search */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Search
+                    </label>
+                    <input
+                        type="text"
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition"
+                        value={search}
+                        placeholder="Search projects..."
+                        onChange={(event) => setSearch(event.target.value)}
+                    />
+                </div>
 
-                <input
-                    type="number"
-                    min="0"
-                    value={minBudget}
-                    onChange={(event) =>
-                        setMinBudget(event.target.value)
-                    }
-                />
+                {/* Min Budget */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Min Budget
+                    </label>
+                    <input
+                        type="number"
+                        min="0"
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition"
+                        value={minBudget}
+                        placeholder="Min"
+                        onChange={(event) => setMinBudget(event.target.value)}
+                    />
+                </div>
+
+                {/* Max Budget */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Max Budget
+                    </label>
+                    <input
+                        type="number"
+                        min="0"
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition"
+                        value={maxBudget}
+                        placeholder="Max"
+                        onChange={(event) => setMaxBudget(event.target.value)}
+                    />
+                </div>
+
+                {/* Status */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Status
+                    </label>
+                    <select
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition bg-white"
+                        value={status}
+                        onChange={(event) => setStatus(event.target.value)}
+                    >
+                        <option value="">All statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                {/* Sort */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Sort
+                    </label>
+                    <select
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition bg-white"
+                        value={sort}
+                        onChange={(event) => setSort(event.target.value)}
+                    >
+                        <option value="-createdAt">Newest</option>
+                        <option value="createdAt">Oldest</option>
+                        <option value="budget">Budget: Low to High</option>
+                        <option value="-budget">Budget: High to Low</option>
+                        <option value="title">Title: A-Z</option>
+                        <option value="-title">Title: Z-A</option>
+                    </select>
+                </div>
+
+                {/* Limit */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
+                        Per Page
+                    </label>
+                    <select
+                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition bg-white"
+                        value={limit}
+                        onChange={(event) => setLimit(Number(event.target.value))}
+                    >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={20}>20</option>
+                        <option value={50}>50</option>
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label>Maximum Budget</label>
-
-                <input
-                    type="number"
-                    min="0"
-                    value={maxBudget}
-                    onChange={(event) =>
-                        setMaxBudget(event.target.value)
-                    }
-                />
-            </div>
-
-            <div>
-                <label>Status</label>
-
-                <select
-                    value={status}
-                    onChange={(event) =>
-                        setStatus(event.target.value)
-                    }
+            <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+                <button
+                    type="button"
+                    onClick={handleApplyFilters}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
                 >
-                    <option value="">All statuses</option>
-                    <option value="open">Open</option>
-                    <option value="in-progress">
-                        In Progress
-                    </option>
-                    <option value="completed">
-                        Completed
-                    </option>
-                    <option value="cancelled">
-                        Cancelled
-                    </option>
-                </select>
-            </div>
-
-            <div>
-                <label>Sort</label>
-
-                <select
-                    value={sort}
-                    onChange={(event) =>
-                        setSort(event.target.value)
-                    }
+                    <Search size={18} />
+                    Search
+                </button>
+                <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
                 >
-                    <option value="-createdAt">
-                        Newest
-                    </option>
-
-                    <option value="createdAt">
-                        Oldest
-                    </option>
-
-                    <option value="budget">
-                        Budget: Low to High
-                    </option>
-
-                    <option value="-budget">
-                        Budget: High to Low
-                    </option>
-
-                    <option value="title">
-                        Title: A-Z
-                    </option>
-
-                    <option value="-title">
-                        Title: Z-A
-                    </option>
-                </select>
+                    <X size={18} />
+                    Clear
+                </button>
             </div>
-
-            <div>
-                <label>Projects per page</label>
-
-                <select
-                    value={limit}
-                    onChange={(event) =>
-                        setLimit(Number(event.target.value))
-                    }
-                >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                </select>
-            </div>
-
-            <button
-                type="button"
-                onClick={handleApplyFilters}
-            >
-                Search
-            </button>
-
-            <button
-                type="button"
-                onClick={handleClearFilters}
-            >
-                Clear
-            </button>
-
         </div>
     );
 }

@@ -3,7 +3,7 @@ import {
     Routes,
     Route
 } from "react-router-dom";
-
+import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 
 import Login from "./components/Login";
@@ -32,6 +32,7 @@ function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
+                <Toaster position="top-right" />
                 <Routes>
                     {/* Public routes */}
                     <Route element={<PublicRoute />}>
@@ -52,11 +53,13 @@ function App() {
                         </Route>
                         {/* Admin routes */}
                         <Route element={<AdminRoute />}>
-                            <Route path="/admin" element={<AdminLayout />}>
-                                <Route path="users" element={<AdminUsers />} />
-                                <Route path="projects" element={<AdminProjects />} />
-                                <Route path="proposals" element={<AdminProposals />} />
-                                <Route path="reviews" element={<AdminReviews />} />
+                            <Route element={<Layout />}>
+                                <Route path="/admin" element={<AdminLayout />}>
+                                    <Route path="users" element={<AdminUsers />} />
+                                    <Route path="projects" element={<AdminProjects />} />
+                                    <Route path="proposals" element={<AdminProposals />} />
+                                    <Route path="reviews" element={<AdminReviews />} />
+                                </Route>
                             </Route>
                         </Route>
                     </Route>

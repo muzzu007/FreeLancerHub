@@ -54,3 +54,8 @@ export const deleteProject = (projectId) => {
         method: "DELETE"
     });
 };
+
+
+export const getRecommendedProjects = () => {
+    return apiRequest("/projects/recommended");
+};

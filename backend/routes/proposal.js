@@ -3,7 +3,8 @@ const Proposal = require("../models/Proposal");
 const Project = require("../models/Project");
 const { protect, authorize } = require("../middleware/authMiddleware");
 const validateObjectId = require("../middleware/validateObjectId");
-
+const Conversation = require("../models/Conversation");
+const Message = require("../models/Message");
 
 const router = express.Router();
 
@@ -191,6 +192,34 @@ router.patch(
                 });
             }
 
+
+            if (status === "accepted") {
+
+                const conversation =
+                    await Conversation.findOne({
+                        proposal: proposal._id
+                    });
+
+                if (!conversation) {
+                    return res.status(409).json({
+                        message:
+                            "You must start a conversation before accepting this proposal"
+                    });
+                }
+
+                const messageCount =
+                    await Message.countDocuments({
+                        conversation: conversation._id
+                    });
+
+                if (messageCount === 0) {
+                    return res.status(409).json({
+                        message:
+                            "You must send at least one message before accepting this proposal"
+                    });
+                }
+            }
+
             proposal.status = status;
             if (status === "accepted") {
 
@@ -235,39 +264,39 @@ router.delete(
     protect,
     validateObjectId("id"),
     async (req, res, next) => {
-    try {
-        const { id } = req.params;
+        try {
+            const { id } = req.params;
 
-        const proposal = await Proposal.findById(id);
+            const proposal = await Proposal.findById(id);
 
-        if (!proposal) {
-            return res.status(404).json({
-                message: "Proposal not found"
+            if (!proposal) {
+                return res.status(404).json({
+                    message: "Proposal not found"
+                });
+            }
+
+            if (proposal.freelancer.toString() !== req.user.userId) {
+                return res.status(403).json({
+                    message: "You can only withdraw your own proposal"
+                });
+            }
+
+            if (proposal.status !== "pending") {
+                return res.status(409).json({
+                    message: "Only pending proposals can be withdrawn"
+                });
+            }
+
+            await Proposal.findByIdAndDelete(id);
+
+            res.status(200).json({
+                message: "Proposal withdrawn successfully"
             });
+
+        } catch (error) {
+            next(error);
         }
-
-        if (proposal.freelancer.toString() !== req.user.userId) {
-            return res.status(403).json({
-                message: "You can only withdraw your own proposal"
-            });
-        }
-
-        if (proposal.status !== "pending") {
-            return res.status(409).json({
-                message: "Only pending proposals can be withdrawn"
-            });
-        }
-
-        await Proposal.findByIdAndDelete(id);
-
-        res.status(200).json({
-            message: "Proposal withdrawn successfully"
-        });
-
-    } catch (error) {
-        next(error);
-    }
-});
+    });
 
 router.patch("/:id/withdraw", protect, authorize("freelancer"), async (req, res, next) => {
     try {

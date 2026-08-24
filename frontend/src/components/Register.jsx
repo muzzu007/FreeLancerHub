@@ -3,7 +3,6 @@ import RoleSelection from "./RoleSelection";
 import RegisterForm from "./RegisterForm";
 
 function Register() {
-
   const [selectedRole, setSelectedRole] = useState(null);
 
   if (!selectedRole) {
