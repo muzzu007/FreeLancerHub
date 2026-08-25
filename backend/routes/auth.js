@@ -23,7 +23,7 @@ const authLimiter = rateLimit({
     }
 });
 
-router.post("/register",authLimiter, async (req, res, next) => {
+router.post("/register", authLimiter, async (req, res, next) => {
     try {
         const {
             name,
@@ -114,7 +114,7 @@ router.post("/register",authLimiter, async (req, res, next) => {
 });
 
 
-router.post("/login", authLimiter,async (req, res, next) => {
+router.post("/login", authLimiter, async (req, res, next) => {
     try {
         const {
             email: rawEmail,
@@ -167,14 +167,14 @@ router.post("/login", authLimiter,async (req, res, next) => {
         res.cookie("accessToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 15 * 60 * 1000
         });
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
         res.status(200).json({
@@ -202,8 +202,16 @@ router.post("/logout", async (req, res, next) => {
             });
         }
 
-        res.clearCookie("accessToken");
-        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none"
+        });
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "none"
+        });
 
         res.status(200).json({
             message: "Logout Successfully"
@@ -286,14 +294,14 @@ router.post("/refresh", async (req, res, next) => {
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 15 * 60 * 1000
         });
 
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
