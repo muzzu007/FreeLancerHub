@@ -13,9 +13,15 @@ const errorHandler = require("./middleware/errorMiddleware");
 const reviewRoutes = require("./routes/review");
 const adminRoutes = require("./routes/admin");
 const chatRoutes = require("./routes/chat");
+const http = require("http");
+const { Server } = require("socket.io");
+const initializeSocket =
+    require("./socket/socketHandler");
 
 
 const app = express();
+const server =
+    http.createServer(app);
 
 app.use(
     cors({
@@ -23,6 +29,16 @@ app.use(
         credentials: true
     })
 );
+
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT_URL,
+        credentials: true
+    }
+});
+
+initializeSocket(io);
+
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 200,
@@ -32,6 +48,7 @@ const limiter = rateLimit({
         message: "Too many requests. Please try again later."
     }
 });
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
@@ -54,6 +71,6 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, ()=>{
+server.listen(PORT, ()=>{
     console.log(`Server started of port ${PORT}`);
 });

@@ -98,13 +98,32 @@ router.post(
 
             if (!conversation) {
 
-                conversation =
-                    await Conversation.create({
-                        project: project._id,
-                        proposal: proposal._id,
-                        client: project.client,
-                        freelancer: proposal.freelancer
-                    });
+                try {
+
+                    conversation =
+                        await Conversation.create({
+                            project: project._id,
+                            proposal: proposal._id,
+                            client: project.client,
+                            freelancer: proposal.freelancer
+                        });
+
+                } catch (error) {
+
+                    // Another request may have created
+                    // the conversation at the same time.
+                    if (error.code === 11000) {
+
+                        conversation =
+                            await Conversation.findOne({
+                                proposal: proposal._id
+                            });
+
+                    } else {
+
+                        throw error;
+                    }
+                }
 
                 conversation =
                     await Conversation.findById(
@@ -127,7 +146,6 @@ router.post(
                             "bidAmount status"
                         );
             }
-
             res.status(200).json({
                 conversation
             });
@@ -233,9 +251,9 @@ router.get(
 
             const isParticipant =
                 conversation.client._id.toString() ===
-                    userId ||
+                userId ||
                 conversation.freelancer._id.toString() ===
-                    userId;
+                userId;
 
             if (!isParticipant) {
                 return res.status(403).json({
@@ -283,9 +301,9 @@ router.get(
 
             const isParticipant =
                 conversation.client.toString() ===
-                    userId ||
+                userId ||
                 conversation.freelancer.toString() ===
-                    userId;
+                userId;
 
             if (!isParticipant) {
                 return res.status(403).json({
@@ -368,9 +386,9 @@ router.post(
 
             const isParticipant =
                 conversation.client.toString() ===
-                    userId ||
+                userId ||
                 conversation.freelancer.toString() ===
-                    userId;
+                userId;
 
             if (!isParticipant) {
                 return res.status(403).json({
@@ -409,6 +427,7 @@ router.post(
                     text: cleanText
                 });
 
+            conversation.updatedAt = new Date();
             await conversation.save();
 
             const populatedMessage =
