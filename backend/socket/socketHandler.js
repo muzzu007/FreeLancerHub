@@ -1,57 +1,8 @@
 const jwt = require("jsonwebtoken");
 
-
 const Conversation = require("../models/Conversation");
 const registerChatSocket = require("./chatSocket");
 
-
-// function authenticateSocket(socket, next) {
-
-//     try {
-
-//         const cookieHeader =
-//             socket.handshake.headers.cookie;
-
-//         if (!cookieHeader) {
-//             return next(
-//                 new Error("Authentication required")
-//             );
-//         }
-
-//         const cookies =
-//             cookie.parse(cookieHeader);
-
-//         const accessToken =
-//             cookies.accessToken;
-
-//         if (!accessToken) {
-//             return next(
-//                 new Error("Authentication required")
-//             );
-//         }
-
-//         const decoded =
-//             jwt.verify(
-//                 accessToken,
-//                 process.env.JWT_SECRET
-//             );
-
-//         socket.user = decoded;
-
-//         next();
-
-//     } catch (error) {
-
-//         console.error(
-//             "Socket authentication error:",
-//             error.message
-//         );
-
-//         next(
-//             new Error("Invalid authentication token")
-//         );
-//     }
-// }
 
 function authenticateSocket(socket, next) {
 
@@ -85,25 +36,20 @@ function authenticateSocket(socket, next) {
                     );
             });
 
-
         const accessToken =
             cookies.accessToken;
 
-
         if (!accessToken) {
-
             return next(
                 new Error("Authentication required")
             );
         }
-
 
         const decoded =
             jwt.verify(
                 accessToken,
                 process.env.JWT_SECRET
             );
-
 
         socket.user = decoded;
 
@@ -157,31 +103,12 @@ async function getConversationAccess(
 
 function initializeSocket(io) {
 
-    // ---------------------------------------
-    // Authenticate every Socket.IO connection
-    // ---------------------------------------
-
     io.use(authenticateSocket);
-
-
-    // ---------------------------------------
-    // Socket connection
-    // ---------------------------------------
 
     io.on("connection", async (socket) => {
 
-        console.log(
-            `Socket connected: ${socket.user.userId}`
-        );
-
-
         const conversationId =
             socket.handshake.query.conversationId;
-
-
-        // ---------------------------------------
-        // Conversation ID required
-        // ---------------------------------------
 
         if (!conversationId) {
 
@@ -198,19 +125,13 @@ function initializeSocket(io) {
             return;
         }
 
-
         try {
-
-            // ---------------------------------------
-            // Verify conversation + participant
-            // ---------------------------------------
 
             const conversation =
                 await getConversationAccess(
                     conversationId,
                     socket.user.userId
                 );
-
 
             if (!conversation) {
 
@@ -227,7 +148,6 @@ function initializeSocket(io) {
                 return;
             }
 
-
             if (conversation === false) {
 
                 socket.emit(
@@ -243,11 +163,6 @@ function initializeSocket(io) {
                 return;
             }
 
-
-            // ---------------------------------------
-            // Join conversation room
-            // ---------------------------------------
-
             const room =
                 `conversation:${conversationId}`;
 
@@ -256,38 +171,17 @@ function initializeSocket(io) {
             socket.conversationId =
                 conversationId.toString();
 
-
-            console.log(
-                `User ${socket.user.userId} joined ${room}`
-            );
-
-
-            // ---------------------------------------
-            // Register chat events
-            // ---------------------------------------
-
             registerChatSocket(
                 io,
                 socket
             );
 
-
-            // ---------------------------------------
-            // Disconnect
-            // ---------------------------------------
-
             socket.on(
                 "disconnect",
-                (reason) => {
-
-                    console.log(
-                        `Socket disconnected: ${socket.user.userId}`,
-                        reason
-                    );
-
+                () => {
+                    // Socket.IO handles room cleanup automatically.
                 }
             );
-
 
         } catch (error) {
 
@@ -306,7 +200,6 @@ function initializeSocket(io) {
 
             socket.disconnect();
         }
-
     });
 }
 

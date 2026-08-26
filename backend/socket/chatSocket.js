@@ -1,7 +1,6 @@
 const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 
-
 function registerChatSocket(io, socket) {
 
     socket.on(
@@ -10,29 +9,10 @@ function registerChatSocket(io, socket) {
 
             try {
 
-                // ---------------------------------------
-                // Extract payload FIRST
-                // ---------------------------------------
-
                 const {
                     conversationId,
                     text
                 } = payload || {};
-
-
-                // ---------------------------------------
-                // Debug log
-                // ---------------------------------------
-
-                console.log(
-                    "[SOCKET] send_message received",
-                    {
-                        user: socket.user.userId,
-                        conversationId,
-                        text
-                    }
-                );
-
 
                 // ---------------------------------------
                 // Validate conversation ID
@@ -51,7 +31,6 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 // ---------------------------------------
                 // Validate text
                 // ---------------------------------------
@@ -69,10 +48,7 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
-                const cleanText =
-                    text.trim();
-
+                const cleanText = text.trim();
 
                 if (!cleanText) {
 
@@ -87,7 +63,6 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 if (cleanText.length > 2000) {
 
                     socket.emit(
@@ -101,10 +76,8 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 // ---------------------------------------
-                // Make sure this socket is sending
-                // to the conversation it joined
+                // Verify socket conversation
                 // ---------------------------------------
 
                 if (
@@ -123,7 +96,6 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 // ---------------------------------------
                 // Find conversation
                 // ---------------------------------------
@@ -132,7 +104,6 @@ function registerChatSocket(io, socket) {
                     await Conversation.findById(
                         conversationId
                     );
-
 
                 if (!conversation) {
 
@@ -147,7 +118,6 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 // ---------------------------------------
                 // Verify participant
                 // ---------------------------------------
@@ -155,16 +125,13 @@ function registerChatSocket(io, socket) {
                 const userId =
                     socket.user.userId.toString();
 
-
                 const isClient =
                     conversation.client.toString() ===
                     userId;
 
-
                 const isFreelancer =
                     conversation.freelancer.toString() ===
                     userId;
-
 
                 if (
                     !isClient &&
@@ -182,96 +149,39 @@ function registerChatSocket(io, socket) {
                     return;
                 }
 
-
                 // ---------------------------------------
-                // Create message
-                // ---------------------------------------
-
-                const message =
-                    await Message.create({
-                        conversation:
-                            conversation._id,
-
-                        sender:
-                            socket.user.userId,
-
-                        text:
-                            cleanText
-                    });
-
-
-                // ---------------------------------------
-                // Populate sender
+                // Broadcast the latest message
                 // ---------------------------------------
 
-                const populatedMessage =
-                    await Message.findById(
-                        message._id
-                    )
-                        .populate(
-                            "sender",
-                            "name role"
-                        );
+                // The REST API saves the message.
+                // We fetch the most recent message and broadcast it.
+                const latestMessage =
+                    await Message.findOne({
+                        conversation: conversation._id
+                    })
+                        .sort({ createdAt: -1 })
+                        .populate("sender", "name role");
 
+                if (!latestMessage) {
+                    // No message found (shouldn't happen)
+                    socket.emit(
+                        "error",
+                        {
+                            message:
+                                "No message found to broadcast"
+                        }
+                    );
+                    return;
+                }
 
-                // ---------------------------------------
-                // Update conversation timestamp
-                // ---------------------------------------
-
-                conversation.updatedAt =
-                    new Date();
-
-                await conversation.save();
-
-
-                // ---------------------------------------
-                // Conversation room
-                // ---------------------------------------
-
+                // Broadcast to the room
                 const room =
                     `conversation:${conversationId}`;
 
-
-                // ---------------------------------------
-                // Debug logs
-                // ---------------------------------------
-
-                // console.log(
-                //     "[SOCKET] Broadcasting receive_message",
-                //     {
-                //         room,
-                //         messageId:
-                //             populatedMessage._id.toString()
-                //     }
-                // );
-
-
-                console.log(
-                    "[SOCKET] Room sockets:",
-                    io.sockets.adapter.rooms.get(room)
-                        ? [
-                            ...io.sockets.adapter.rooms.get(
-                                room
-                            )
-                        ]
-                        : []
-                );
-
-
-                // ---------------------------------------
-                // Broadcast message
-                // ---------------------------------------
-
                 io.to(room).emit(
                     "receive_message",
-                    populatedMessage
+                    latestMessage
                 );
-
-
-                console.log(
-                    "[SOCKET] Message broadcast successful"
-                );
-
 
             } catch (error) {
 
@@ -279,7 +189,6 @@ function registerChatSocket(io, socket) {
                     "Socket message error:",
                     error
                 );
-
 
                 socket.emit(
                     "error",
@@ -292,6 +201,5 @@ function registerChatSocket(io, socket) {
         }
     );
 }
-
 
 module.exports = registerChatSocket;

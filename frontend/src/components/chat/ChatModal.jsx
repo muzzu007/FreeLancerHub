@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import useSocket from "../../hooks/useSocket";
 import {
   getOrCreateConversation,
   getMessages,
+  sendMessage as sendMessageRest,
 } from "../../services/conversationService";
 import { updateProposalStatus } from "../../services/proposalService";
 import {
   X,
   Send,
   Loader2,
-  User,
   DollarSign,
   CheckCircle,
   XCircle,
@@ -31,37 +31,53 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   const [error, setError] = useState(null);
 
   const messagesEndRef = useRef(null);
+  const isMounted = useRef(true);
+
+  // ✅ ULTIMATE GUARD: prevents any concurrent or rapid sends
+  const isSendingRef = useRef(false);
+  const cooldownRef = useRef(false);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // ============================================================
-  // SOCKET.IO INTEGRATION
+  // SOCKET.IO INTEGRATION (RECEIVE ONLY)
   // ============================================================
 
-  const onMessageReceived = (newMessage) => {
-    console.log("📨 New message received in ChatModal:", newMessage);
+  const onMessageReceived = useCallback(
+    (newMessage) => {
+      // Ignore messages sent by the current user (already added via REST)
+      if (newMessage.sender?._id === user?.id) {
+        return;
+      }
 
-    // ✅ IGNORE messages sent by the current user (already added optimistically)
-    if (newMessage.sender?._id === user?.id) {
-      console.log("⏭️ Skipping own message (already added optimistically)");
-      return;
+      setMessages((prev) => {
+        const exists = prev.some((msg) => msg._id === newMessage._id);
+        if (exists) return prev;
+        return [...prev, newMessage];
+      });
+    },
+    [user?.id]
+  );
+
+  const onSocketError = useCallback((errorMsg) => {
+    if (isMounted.current) {
+      setError(errorMsg);
     }
+  }, []);
 
-    setMessages((prev) => [...prev, newMessage]);
-  };
-
-  const onSocketError = (errorMsg) => {
-    console.error("Socket error in ChatModal:", errorMsg);
-    setError(errorMsg);
-  };
-
-  const { isConnected, isConnecting, sendMessage } = useSocket(
+  const { isConnected, isConnecting, sendMessage: emitBroadcast } = useSocket(
     conversation?._id,
     onMessageReceived,
     onSocketError
   );
 
-  // 🔥 DIRECT LISTENER TEST - Remove after testing
   // ============================================================
-  // LOAD CONVERSATION & MESSAGES
+  // LOAD CONVERSATION & MESSAGES (REST)
   // ============================================================
 
   useEffect(() => {
@@ -70,7 +86,6 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
         setLoading(true);
         setError(null);
 
-        // 1. Get or create conversation (REST)
         const convResponse = await getOrCreateConversation(proposal._id);
         const convData = await convResponse.json();
 
@@ -80,9 +95,14 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
           return;
         }
 
+        if (!convData.conversation) {
+          setError("No conversation found");
+          setLoading(false);
+          return;
+        }
+
         setConversation(convData.conversation);
 
-        // 2. Load existing messages (REST)
         const msgResponse = await getMessages(convData.conversation._id);
         const msgData = await msgResponse.json();
 
@@ -93,21 +113,23 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
         }
 
         setMessages(msgData.messages || []);
+        setLoading(false);
       } catch (error) {
-        console.error("Error loading chat:", error);
+        console.error("LoadChat error:", error);
         setError("Unable to reach server");
-      } finally {
         setLoading(false);
       }
     };
 
     if (proposal?._id) {
       loadChat();
+    } else {
+      setLoading(false);
     }
   }, [proposal]);
 
   // ============================================================
-  // SCROLL TO BOTTOM ON NEW MESSAGES
+  // SCROLL TO BOTTOM
   // ============================================================
 
   useEffect(() => {
@@ -117,73 +139,64 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   }, [messages]);
 
   // ============================================================
-  // SEND MESSAGE (via Socket.IO)
+  // SEND MESSAGE (REST + SOCKET BROADCAST)
   // ============================================================
 
   const handleSendMessage = async (event) => {
     event.preventDefault();
 
+    // ✅ 1. Early exit if sending or cooldown is active
+    if (isSendingRef.current || cooldownRef.current) {
+      return;
+    }
+
     const text = newMessage.trim();
     if (!text || !conversation) return;
 
-    // If socket is connected, send via socket
-    if (isConnected) {
-      setSending(true);
+    // ✅ 2. Lock immediately to prevent double-click
+    isSendingRef.current = true;
+    setSending(true);
+    setError(null);
 
-      // ✅ OPTIMISTIC UPDATE: Add to UI immediately
-      const tempMessage = {
-        _id: `temp-${Date.now()}`,
-        text: text,
-        sender: {
-          _id: user.id,
-          name: user.name,
-        },
-        createdAt: new Date().toISOString(),
-      };
+    try {
+      // 1. Send via REST API
+      const response = await sendMessageRest(conversation._id, text);
+      const data = await response.json();
 
-      setMessages((prev) => [...prev, tempMessage]);
+      if (!response.ok) {
+        setError(data.message || "Unable to send message");
+        // Release lock
+        isSendingRef.current = false;
+        setSending(false);
+        return;
+      }
+
+      // 2. Add the confirmed message to the state
+      setMessages((prev) => [...prev, data.message]);
       setNewMessage("");
 
-      // Send via socket
-      const success = sendMessage(text);
-      if (!success) {
-        // If failed, remove the temp message
-        setMessages((prev) => prev.filter((msg) => msg._id !== tempMessage._id));
-        setError("Failed to send message. Please try again.");
+      // 3. Broadcast via Socket.IO to notify others
+      if (isConnected) {
+        emitBroadcast(text);
       }
+
+      // 4. Release lock
+      isSendingRef.current = false;
       setSending(false);
-    } else {
-      // Fallback to REST API if socket is not connected
-      try {
-        setSending(true);
-        setError(null);
 
-        const response = await sendMessageRest(conversation._id, text);
-        const data = await response.json();
+      // ✅ 5. Activate cooldown to prevent accidental re-send
+      cooldownRef.current = true;
+      setTimeout(() => {
+        cooldownRef.current = false;
+      }, 300);
 
-        if (!response.ok) {
-          setError(data.message || "Unable to send message");
-          return;
-        }
-
-        setMessages((prev) => [...prev, data.message]);
-        setNewMessage("");
-      } catch (error) {
-        console.error(error);
-        setError("Unable to reach server");
-      } finally {
-        setSending(false);
-      }
+    } catch (error) {
+      console.error("Send message error:", error);
+      setError("Unable to reach server");
+      // Release lock on error
+      isSendingRef.current = false;
+      setSending(false);
     }
-  };
-
-  // ============================================================
-  // FALLBACK: Send message via REST API
-  // ============================================================
-
-  const sendMessageRest = async (conversationId, text) => {
-    const { sendMessage } = await import("../../services/conversationService");
-    return sendMessage(conversationId, text);
   };
 
   // ============================================================
@@ -221,7 +234,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
       console.error(error);
       setError("Unable to reach server");
     } finally {
-      setUpdatingStatus(false);
+      if (isMounted.current) setUpdatingStatus(false);
     }
   };
 
@@ -280,6 +293,8 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   // RENDER
   // ============================================================
 
+  const isInputDisabled = sending || !isPending || loading;
+
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -289,10 +304,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* ========================================== */}
         {/* HEADER */}
-        {/* ========================================== */}
-
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#635bff] to-[#00d4b2] flex items-center justify-center text-white font-semibold">
@@ -318,6 +330,11 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
                       <Wifi size={12} className="text-green-500" />
                       <span className="text-green-500">Live</span>
                     </>
+                  ) : isConnecting ? (
+                    <>
+                      <Loader2 size={12} className="animate-spin text-yellow-500" />
+                      <span className="text-yellow-500">Connecting…</span>
+                    </>
                   ) : (
                     <>
                       <WifiOff size={12} className="text-gray-400" />
@@ -336,10 +353,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
           </button>
         </div>
 
-        {/* ========================================== */}
         {/* MESSAGES */}
-        {/* ========================================== */}
-
         <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[400px] bg-gray-50">
           {loading ? (
             <div className="flex items-center justify-center h-full">
@@ -355,33 +369,31 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
                 <MessageIcon size={32} className="text-gray-400" />
               </div>
               <p className="text-gray-500">No messages yet</p>
-              <p className="text-sm text-gray-400">
-                Start the conversation!
-              </p>
+              <p className="text-sm text-gray-400">Start the conversation!</p>
             </div>
           ) : (
             messages.map((msg) => {
-              const isOwnMessage = msg.sender?._id === user?.id;
+              const isOwn = msg.sender?._id === user?.id;
               return (
                 <div
                   key={msg._id}
-                  className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                  className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isOwnMessage
-                      ? "bg-gradient-to-r from-[#635bff] to-[#00d4b2] text-white"
-                      : "bg-white border border-gray-200 text-gray-800"
-                      }`}
+                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                      isOwn
+                        ? "bg-gradient-to-r from-[#635bff] to-[#00d4b2] text-white"
+                        : "bg-white border border-gray-200 text-gray-800"
+                    }`}
                   >
                     <p className="text-sm font-medium">
-                      {isOwnMessage ? "You" : msg.sender?.name || "Unknown"}
+                      {isOwn ? "You" : msg.sender?.name || "Unknown"}
                     </p>
                     <p className="text-sm break-words">{msg.text}</p>
                     <p
-                      className={`text-xs mt-1 ${isOwnMessage
-                        ? "text-white/70"
-                        : "text-gray-400"
-                        }`}
+                      className={`text-xs mt-1 ${
+                        isOwn ? "text-white/70" : "text-gray-400"
+                      }`}
                     >
                       {new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -396,10 +408,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* ========================================== */}
-        {/* MESSAGE INPUT */}
-        {/* ========================================== */}
-
+        {/* INPUT AREA */}
         <div className="p-4 border-t border-gray-200 bg-white rounded-b-2xl">
           <form onSubmit={handleSendMessage} className="flex gap-2">
             <input
@@ -409,20 +418,14 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder={
                 isPending
-                  ? "Type a message..."
+                  ? "Type a message…"
                   : "This proposal is no longer active"
               }
-              disabled={sending || !isPending || loading}
+              disabled={isInputDisabled}
             />
             <button
               type="submit"
-              disabled={
-                sending ||
-                !newMessage.trim() ||
-                !isPending ||
-                loading ||
-                !isConnected
-              }
+              disabled={isInputDisabled || !newMessage.trim()}
               className="px-4 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {sending ? (
@@ -434,25 +437,23 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
           </form>
           {!isConnected && !loading && (
             <p className="text-xs text-yellow-600 mt-2">
-              ⚠️ Reconnecting to chat...
+              ⚠️ Real-time updates offline. Messages still send.
             </p>
           )}
         </div>
 
-        {/* ========================================== */}
-        {/* ACCEPT / REJECT BUTTONS (Client only) */}
-        {/* ========================================== */}
-
+        {/* ACCEPT / REJECT (Client only) */}
         {isClient && isPending && (
           <div className="flex gap-3 p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
             <button
               type="button"
               onClick={() => handleStatusChange("accepted")}
               disabled={updatingStatus || !canAccept}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold transition-all duration-200 ${canAccept
-                ? "bg-green-500 text-white hover:bg-green-600"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
+                canAccept
+                  ? "bg-green-500 text-white hover:bg-green-600"
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              }`}
               title={
                 !canAccept && messages.length === 0
                   ? "Send at least one message before accepting"
@@ -460,7 +461,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
               }
             >
               <CheckCircle size={18} />
-              {updatingStatus ? "Processing..." : "Accept Proposal"}
+              {updatingStatus ? "Processing…" : "Accept Proposal"}
             </button>
             <button
               type="button"
@@ -469,16 +470,15 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold bg-red-500 text-white hover:bg-red-600 transition-all duration-200"
             >
               <XCircle size={18} />
-              {updatingStatus ? "Processing..." : "Reject"}
+              {updatingStatus ? "Processing…" : "Reject"}
             </button>
           </div>
         )}
 
-        {/* Status message for non-pending proposals */}
         {!isPending && (
           <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
             <p className="text-center text-sm text-gray-500">
-              This proposal is {proposal?.status}. Chat is read-only.
+              This proposal is {proposal?.status}. Chat is read‑only.
             </p>
           </div>
         )}
@@ -487,6 +487,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   );
 }
 
+// Helper icon
 function MessageIcon(props) {
   return (
     <svg
