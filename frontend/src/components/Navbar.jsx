@@ -53,7 +53,7 @@ function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Brand */}
-            <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+            <Link to="/dashboard" className="flex items-center gap-2 group flex-shrink-0">
               <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-[#635bff] to-[#00d4b2] bg-clip-text text-transparent">
                 FreelanceHub
               </span>
@@ -63,7 +63,7 @@ function Navbar() {
             {user && (
               <>
                 <div className="hidden md:flex items-center gap-1">
-                  <Link to="/" className={linkClasses}>
+                  <Link to="/dashboard" className={linkClasses}>
                     <LayoutDashboard size={18} />
                     <span>Dashboard</span>
                   </Link>
@@ -111,7 +111,7 @@ function Navbar() {
           {/* Mobile Menu */}
           {isMenuOpen && user && (
             <div className="md:hidden pb-4 space-y-1 border-t border-gray-100 pt-2">
-              <Link to="/" className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-indigo-50 text-gray-700 hover:text-[#635bff] transition-colors" onClick={() => setIsMenuOpen(false)}>
+              <Link to="/dashboard" className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-indigo-50 text-gray-700 hover:text-[#635bff] transition-colors" onClick={() => setIsMenuOpen(false)}>
                 <LayoutDashboard size={18} /> Dashboard
               </Link>
               <Link to="/projects" className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-indigo-50 text-gray-700 hover:text-[#635bff] transition-colors" onClick={() => setIsMenuOpen(false)}>

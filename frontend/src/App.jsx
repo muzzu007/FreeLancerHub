@@ -47,7 +47,7 @@ function App() {
                     {/* Protected routes with Navbar */}
                     <Route element={<ProtectedRoute />}>
                         <Route element={<Layout />}>
-                            <Route path="/dasboard" element={<Home />} />
+                            <Route path="/dashboard" element={<Home />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/projects/:projectId" element={<ProjectDetails />} />
                             <Route path="/my-proposals" element={<MyProposals />} />
