@@ -1,13 +1,11 @@
-import { Search, X, Filter } from "lucide-react";
+import { X } from "lucide-react";
 
 function ProjectFilters({
-    search,
     minBudget,
     maxBudget,
     status,
     sort,
     limit,
-    setSearch,
     setMinBudget,
     setMaxBudget,
     setStatus,
@@ -17,27 +15,8 @@ function ProjectFilters({
     handleClearFilters
 }) {
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div className="flex items-center gap-2 mb-4">
-                <Filter size={20} className="text-[#635bff]" />
-                <h2 className="text-lg font-semibold text-gray-800">Find Projects</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {/* Search */}
-                <div>
-                    <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
-                        Search
-                    </label>
-                    <input
-                        type="text"
-                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition"
-                        value={search}
-                        placeholder="Search projects..."
-                        onChange={(event) => setSearch(event.target.value)}
-                    />
-                </div>
-
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Min Budget */}
                 <div>
                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1.5">
@@ -129,8 +108,7 @@ function ProjectFilters({
                     onClick={handleApplyFilters}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
                 >
-                    <Search size={18} />
-                    Search
+                    Apply Filters
                 </button>
                 <button
                     type="button"
@@ -138,7 +116,7 @@ function ProjectFilters({
                     className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
                 >
                     <X size={18} />
-                    Clear
+                    Clear All
                 </button>
             </div>
         </div>

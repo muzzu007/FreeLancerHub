@@ -167,7 +167,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
         res.cookie("accessToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite:  process.env.SITE_MODE,
            
             maxAge: 15 * 60 * 1000
         });
@@ -175,7 +175,7 @@ router.post("/login", authLimiter, async (req, res, next) => {
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite:  process.env.SITE_MODE,
             
 
             maxAge: 7 * 24 * 60 * 60 * 1000
@@ -208,14 +208,14 @@ router.post("/logout", async (req, res, next) => {
         res.clearCookie("accessToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none"
+            sameSite:  process.env.SITE_MODE
            
 
         });
         res.clearCookie("refreshToken", {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite:  process.env.SITE_MODE,
            
 
         });
@@ -301,7 +301,7 @@ router.post("/refresh", async (req, res, next) => {
         res.cookie("accessToken", newAccessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite:  process.env.SITE_MODE,
             
 
             maxAge: 15 * 60 * 1000
@@ -310,7 +310,8 @@ router.post("/refresh", async (req, res, next) => {
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
-            sameSite: "none",
+            sameSite: process.env.SITE_MODE,
+
             
 
             maxAge: 7 * 24 * 60 * 60 * 1000

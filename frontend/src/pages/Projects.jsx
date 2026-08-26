@@ -13,7 +13,7 @@ import ProjectForm from "../components/projects/ProjectForm";
 import ProjectList from "../components/projects/ProjectList";
 import ProposalForm from "../components/projects/ProposalForm";
 import ProjectFilters from "../components/projects/ProjectFilters";
-import { Briefcase, Sparkles, Plus, Filter } from "lucide-react";
+import { Briefcase, Sparkles, Plus, Filter, Search } from "lucide-react";
 
 function Projects() {
 
@@ -57,6 +57,7 @@ function Projects() {
     const [sort, setSort] = useState("-createdAt");
     const [limit, setLimit] = useState(10);
     const [viewMode, setViewMode] = useState("all");
+    const [showFilters, setShowFilters] = useState(false);
 
     // --------------------------------------------------
     // PAGINATION
@@ -362,6 +363,67 @@ function Projects() {
                 </div>
             )}
 
+            {/* ========================================== */}
+            {/* SEARCH + FILTER TOGGLE */}
+            {/* ========================================== */}
+
+            <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                {/* Search Input */}
+                <div className="flex-1 flex gap-2">
+                    <input
+                        type="text"
+                        className="flex-1 px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#635bff]/30 focus:border-[#635bff] outline-none transition"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        placeholder="Search projects by title..."
+                        onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
+                    />
+                    <button
+                        onClick={handleApplyFilters}
+                        className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 whitespace-nowrap"
+                    >
+                        <Search size={18} />
+                        Search
+                    </button>
+                </div>
+
+                {/* Filter Toggle Button */}
+                <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
+                        showFilters
+                            ? "bg-[#635bff] text-white shadow-md"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                >
+                    <Filter size={18} />
+                    {showFilters ? "Hide Filters" : "Show Filters"}
+                </button>
+            </div>
+
+            {/* ========================================== */}
+            {/* FILTERS (Collapsible) */}
+            {/* ========================================== */}
+
+            {showFilters && (
+                <div className="mb-6 animate-fadeIn">
+                    <ProjectFilters
+                        minBudget={minBudget}
+                        maxBudget={maxBudget}
+                        status={status}
+                        sort={sort}
+                        limit={limit}
+                        setMinBudget={setMinBudget}
+                        setMaxBudget={setMaxBudget}
+                        setStatus={setStatus}
+                        setSort={setSort}
+                        setLimit={setLimit}
+                        handleApplyFilters={handleApplyFilters}
+                        handleClearFilters={handleClearFilters}
+                    />
+                </div>
+            )}
+
             {/* Create Project Form - Client only */}
             {user?.role === "client" && (
                 <div id="createProjectForm" className="mb-6">
@@ -379,24 +441,6 @@ function Projects() {
                     />
                 </div>
             )}
-
-            {/* Filters */}
-            <ProjectFilters
-                search={search}
-                minBudget={minBudget}
-                maxBudget={maxBudget}
-                status={status}
-                sort={sort}
-                limit={limit}
-                setSearch={setSearch}
-                setMinBudget={setMinBudget}
-                setMaxBudget={setMaxBudget}
-                setStatus={setStatus}
-                setSort={setSort}
-                setLimit={setLimit}
-                handleApplyFilters={handleApplyFilters}
-                handleClearFilters={handleClearFilters}
-            />
 
             {/* Project List */}
             {projects.length === 0 ? (
