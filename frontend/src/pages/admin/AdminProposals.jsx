@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
+import useConfirm from "../../hooks/useConfirm";
 import {
   getAdminProposals,
   deleteProposalAsAdmin,
@@ -67,9 +68,13 @@ function AdminProposals() {
   };
 
   const handleDeleteProposal = async (proposalId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this proposal?"
-    );
+    const confirmed = await confirm({
+      title: "Delete User",
+      message: "Are you sure you want to delete this user? This action cannot be undone.",
+      confirmText: "Delete",
+      confirmVariant: "danger",
+    });
+
     if (!confirmed) return;
 
     try {

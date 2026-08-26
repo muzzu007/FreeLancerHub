@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { toast } from "react-hot-toast";
+import useConfirm from "../hooks/useConfirm";
 import {
     getMyProposals,
     withdrawProposal
@@ -15,6 +16,7 @@ function MyProposals() {
     const [proposals, setProposals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const { confirm, ModalComponent } = useConfirm();
 
     const [selectedProposal, setSelectedProposal] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
@@ -64,13 +66,14 @@ function MyProposals() {
 
     const handleWithdraw = async (proposalId) => {
 
-        const confirmed = window.confirm(
-            "Are you sure you want to withdraw this proposal?"
-        );
+        const confirmed = await confirm({
+            title: "Withdraw Proposal",
+            message: "Are you sure you want to withdraw this proposal?",
+            confirmText: "Withdraw",
+            confirmVariant: "danger",
+        });
 
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
 
         try {
 
@@ -240,6 +243,8 @@ function MyProposals() {
                     }}
                 />
             )}
+
+            {ModalComponent}
         </div>
     );
 }

@@ -80,9 +80,14 @@ function AdminUsers() {
   };
 
   const handleToggleStatus = async (userId, currentStatus) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to ${currentStatus ? "suspend" : "activate"} this user?`
-    );
+    const action = currentStatus ? "suspend" : "activate";
+    const confirmed = await confirm({
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)} User`,
+      message: `Are you sure you want to ${action} this user?`,
+      confirmText: action.charAt(0).toUpperCase() + action.slice(1),
+      confirmVariant: action === "suspend" ? "danger" : "primary",
+    });
+
     if (!confirmed) return;
 
     try {
@@ -108,7 +113,13 @@ function AdminUsers() {
   };
 
   const handleChangeRole = async (userId, newRole) => {
-    const confirmed = window.confirm(`Change role to ${newRole}?`);
+    const confirmed = await confirm({
+      title: "Change Role",
+      message: `Are you sure you want to change this user's role to "${newRole}"?`,
+      confirmText: "Change",
+      confirmVariant: "primary",
+    });
+
     if (!confirmed) return;
 
     try {
@@ -134,9 +145,13 @@ function AdminUsers() {
   };
 
   const handleDeleteUser = async (userId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this user? This action cannot be undone."
-    );
+    const confirmed = await confirm({
+      title: "Delete User",
+      message: "Are you sure you want to delete this user? This action cannot be undone.",
+      confirmText: "Delete",
+      confirmVariant: "danger",
+    });
+
     if (!confirmed) return;
 
     try {
@@ -268,11 +283,10 @@ function AdminUsers() {
                     </td>
                     <td className="px-6 py-3">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
-                          user.isActive
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${user.isActive
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                          }`}
                       >
                         {user.isActive ? <UserCheck size={14} /> : <UserX size={14} />}
                         {user.isActive ? "Active" : "Suspended"}
@@ -282,11 +296,10 @@ function AdminUsers() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleToggleStatus(user._id, user.isActive)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 ${
-                            user.isActive
-                              ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
-                              : "bg-green-100 text-green-700 hover:bg-green-200"
-                          }`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors duration-200 ${user.isActive
+                            ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200"
+                            : "bg-green-100 text-green-700 hover:bg-green-200"
+                            }`}
                         >
                           {user.isActive ? "Suspend" : "Activate"}
                         </button>

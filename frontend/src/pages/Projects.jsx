@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { toast } from "react-hot-toast";
+
 import {
     getProjects,
     createProject,
@@ -13,7 +14,7 @@ import ProjectForm from "../components/projects/ProjectForm";
 import ProjectList from "../components/projects/ProjectList";
 import ProposalForm from "../components/projects/ProposalForm";
 import ProjectFilters from "../components/projects/ProjectFilters";
-import { Briefcase, Sparkles, Plus, Filter, Search } from "lucide-react";
+import { Briefcase, Sparkles, Plus, Filter, Search,X } from "lucide-react";
 
 function Projects() {
 
@@ -37,6 +38,7 @@ function Projects() {
     const [skills, setSkills] = useState([]);
     const [creating, setCreating] = useState(false);
 
+
     // --------------------------------------------------
     // PROPOSAL
     // --------------------------------------------------
@@ -58,6 +60,7 @@ function Projects() {
     const [limit, setLimit] = useState(10);
     const [viewMode, setViewMode] = useState("all");
     const [showFilters, setShowFilters] = useState(false);
+    const [showCreateForm, setShowCreateForm] = useState(false);
 
     // --------------------------------------------------
     // PAGINATION
@@ -324,11 +327,20 @@ function Projects() {
                 {user?.role === "client" && (
                     <button
                         type="button"
-                        onClick={() => document.getElementById("createProjectForm")?.scrollIntoView({ behavior: "smooth" })}
+                        onClick={() => setShowCreateForm(!showCreateForm)}
                         className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
                     >
-                        <Plus size={20} />
-                        Post a Project
+                        {showCreateForm ? (
+                            <>
+                                <X size={20} />
+                                Hide Form
+                            </>
+                        ) : (
+                            <>
+                                <Plus size={20} />
+                                Post a Project
+                            </>
+                        )}
                     </button>
                 )}
             </div>
@@ -339,11 +351,10 @@ function Projects() {
                     <button
                         type="button"
                         onClick={() => setViewMode("all")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                            viewMode === "all"
-                                ? "bg-white text-[#635bff] shadow-sm"
-                                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
-                        }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${viewMode === "all"
+                            ? "bg-white text-[#635bff] shadow-sm"
+                            : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
+                            }`}
                     >
                         <Briefcase size={18} />
                         All Projects
@@ -351,11 +362,10 @@ function Projects() {
                     <button
                         type="button"
                         onClick={() => setViewMode("recommended")}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                            viewMode === "recommended"
-                                ? "bg-white text-[#00d4b2] shadow-sm"
-                                : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
-                        }`}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${viewMode === "recommended"
+                            ? "bg-white text-[#00d4b2] shadow-sm"
+                            : "text-gray-600 hover:text-gray-800 hover:bg-white/50"
+                            }`}
                     >
                         <Sparkles size={18} />
                         Recommended for You
@@ -390,11 +400,10 @@ function Projects() {
                 {/* Filter Toggle Button */}
                 <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${
-                        showFilters
-                            ? "bg-[#635bff] text-white shadow-md"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all duration-200 whitespace-nowrap ${showFilters
+                        ? "bg-[#635bff] text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
                 >
                     <Filter size={18} />
                     {showFilters ? "Hide Filters" : "Show Filters"}
@@ -425,8 +434,9 @@ function Projects() {
             )}
 
             {/* Create Project Form - Client only */}
-            {user?.role === "client" && (
-                <div id="createProjectForm" className="mb-6">
+            {/* Create Project Form - Client only */}
+            {user?.role === "client" && showCreateForm && (
+                <div id="createProjectForm" className="mb-6 animate-fadeIn">
                     <ProjectForm
                         title={title}
                         description={description}

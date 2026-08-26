@@ -75,7 +75,7 @@ function ProjectForm({
                 <button
                     type="submit"
                     disabled={creating}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-green-500 to-emerald-500 hover:shadow-lg hover:shadow-green-500/25 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                     {creating ? (
                         <>

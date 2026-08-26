@@ -5,7 +5,8 @@ import { toast } from "react-hot-toast";
 import {
     getProject,
     updateProject,
-    deleteProject
+    deleteProject,
+    updateProjectStatus
 } from "../services/projectService";
 import {
     submitProposal,
@@ -36,6 +37,8 @@ import {
     Send,
     Star
 } from "lucide-react";
+import useConfirm from "../hooks/useConfirm";
+
 
 function ProjectDetails() {
 
@@ -67,6 +70,7 @@ function ProjectDetails() {
     const [totalReviews, setTotalReviews] = useState(0);
     const [loadingReviews, setLoadingReviews] = useState(true);
     const [showReviewForm, setShowReviewForm] = useState(false);
+    const { confirm, ModalComponent } = useConfirm();
 
     useEffect(() => {
 
@@ -222,36 +226,61 @@ function ProjectDetails() {
         }
     };
 
-    const handleDeleteProject = async () => {
+    // --------------------------------------------------
+    // COMPLETE PROJECT (in-progress → completed)
+    // --------------------------------------------------
 
-        const confirmed = window.confirm(
-            "Are you sure you want to delete this project?"
-        );
+    const handleCompleteProject = async () => {
+        const confirmed = await confirm({
+            title: "Complete Project",
+            message: "Are you sure you want to mark this project as completed?",
+            confirmText: "Yes, Complete",
+            confirmVariant: "success",
+        });
 
-        if (!confirmed) {
-            return;
-        }
+        if (!confirmed) return;
+        
 
         try {
+            const response = await updateProjectStatus(projectId, "completed");
+            const data = await response.json();
 
+            if (!response.ok) {
+                toast.error(data.message || "Unable to complete project");
+                return;
+            }
+
+            setProject(data.project);
+            toast.success("Project marked as completed! 🎉");
+
+        } catch (error) {
+            console.error(error);
+            toast.error("Unable to reach server");
+        }
+    };
+
+    const handleDeleteProject = async () => {
+        const confirmed = await confirm({
+            title: "Delete Project",
+            message: "Are you sure you want to delete this project? This action cannot be undone.",
+            confirmText: "Delete",
+            confirmVariant: "danger",
+        });
+
+        if (!confirmed) return;
+
+        try {
             const response = await deleteProject(projectId);
             const data = await response.json();
 
             if (!response.ok) {
-
-                toast.error(
-                    data.message ||
-                    "Unable to delete project"
-                );
-
+                toast.error(data.message || "Unable to delete project");
                 return;
             }
 
             toast.success("Project deleted successfully");
             navigate("/projects");
-
         } catch (error) {
-
             console.error(error);
             toast.error("Unable to reach server");
         }
@@ -508,6 +537,15 @@ function ProjectDetails() {
                                 <Eye size={18} />
                                 View Proposals
                             </button>
+                            {project.status === "in-progress" && (
+                                <button
+                                    type="button"
+                                    onClick={handleCompleteProject}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-green-500 hover:bg-green-600 transition-colors"
+                                >
+                                    ✅ Mark as Completed
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <EditProjectForm
@@ -611,6 +649,7 @@ function ProjectDetails() {
                     )}
                 </div>
             )}
+            {ModalComponent}
         </div>
     );
 }

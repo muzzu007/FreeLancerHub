@@ -9,11 +9,12 @@ import {
   DollarSign,
   FileText,
 } from "lucide-react";
+import useConfirm from "../../hooks/useConfirm";
 
 function ProposalCard({ proposal, onProposalUpdated, project }) {
   const { user } = useAuth();
   const [showChat, setShowChat] = useState(false);
-
+  const { confirm, ModalComponent } = useConfirm();
   const isClient = user?.id === project?.client?._id;
   const isPending = proposal?.status === "pending";
 
@@ -89,15 +90,21 @@ function ProposalCard({ proposal, onProposalUpdated, project }) {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm("Are you sure you want to reject this proposal?")) {
+                    onClick={async () => {
+                      const confirmed = await confirm({
+                        title: "Reject Proposal",
+                        message: "Are you sure you want to reject this proposal?",
+                        confirmText: "Reject",
+                        confirmVariant: "danger",
+                      });
+
+                      if (confirmed) {
                         onProposalUpdated(proposal._id, "rejected");
                       }
                     }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-white bg-red-500 hover:bg-red-600 transition-colors duration-200"
+                    className="..."
                   >
-                    <XCircle size={18} />
-                    Reject
+                    ❌ Reject
                   </button>
                 </>
               )}
@@ -126,6 +133,8 @@ function ProposalCard({ proposal, onProposalUpdated, project }) {
           onProposalUpdated={onProposalUpdated}
         />
       )}
+
+      {ModalComponent}
     </>
   );
 }

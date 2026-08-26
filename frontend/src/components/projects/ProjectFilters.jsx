@@ -106,7 +106,7 @@ function ProjectFilters({
                 <button
                     type="button"
                     onClick={handleApplyFilters}
-                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
+                    className="flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-white bg-gray-700 hover:bg-gray-800 transition-colors duration-200"
                 >
                     Apply Filters
                 </button>

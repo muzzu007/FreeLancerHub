@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import useSocket from "../../hooks/useSocket";
+import useConfirm from "../../hooks/useConfirm";
 import {
   getOrCreateConversation,
   getMessages,
@@ -29,7 +30,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   const [sending, setSending] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [error, setError] = useState(null);
-
+  const { confirm, ModalComponent } = useConfirm();
   const messagesEndRef = useRef(null);
   const isMounted = useRef(true);
 
@@ -204,12 +205,17 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
   // ============================================================
 
   const handleStatusChange = async (status) => {
-    const confirmMessage =
-      status === "accepted"
+    const isAccept = status === "accepted";
+    const confirmed = await confirm({
+      title: isAccept ? "Accept Proposal" : "Reject Proposal",
+      message: isAccept
         ? "Are you sure you want to hire this freelancer?"
-        : "Are you sure you want to reject this proposal?";
+        : "Are you sure you want to reject this proposal?",
+      confirmText: isAccept ? "Accept" : "Reject",
+      confirmVariant: isAccept ? "success" : "danger",
+    });
 
-    if (!window.confirm(confirmMessage)) return;
+    if (!confirmed) return;
 
     try {
       setUpdatingStatus(true);
@@ -380,20 +386,18 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
                   className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                      isOwn
+                    className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isOwn
                         ? "bg-gradient-to-r from-[#635bff] to-[#00d4b2] text-white"
                         : "bg-white border border-gray-200 text-gray-800"
-                    }`}
+                      }`}
                   >
                     <p className="text-sm font-medium">
                       {isOwn ? "You" : msg.sender?.name || "Unknown"}
                     </p>
                     <p className="text-sm break-words">{msg.text}</p>
                     <p
-                      className={`text-xs mt-1 ${
-                        isOwn ? "text-white/70" : "text-gray-400"
-                      }`}
+                      className={`text-xs mt-1 ${isOwn ? "text-white/70" : "text-gray-400"
+                        }`}
                     >
                       {new Date(msg.createdAt).toLocaleTimeString([], {
                         hour: "2-digit",
@@ -449,11 +453,10 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
               type="button"
               onClick={() => handleStatusChange("accepted")}
               disabled={updatingStatus || !canAccept}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold transition-all duration-200 ${
-                canAccept
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold transition-all duration-200 ${canAccept
                   ? "bg-green-500 text-white hover:bg-green-600"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
+                }`}
               title={
                 !canAccept && messages.length === 0
                   ? "Send at least one message before accepting"
@@ -483,6 +486,7 @@ function ChatModal({ proposal, project, onClose, onProposalUpdated }) {
           </div>
         )}
       </div>
+      {ModalComponent}
     </div>
   );
 }

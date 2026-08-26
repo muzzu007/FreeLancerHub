@@ -18,6 +18,7 @@ import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
 import MyProposals from "./pages/MyProposals";
 import ProjectDetails from "./pages/ProjectDetails";
+import Landing from "./pages/Landing";
 
 import AdminRoute from "./components/AdminRoute";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -26,7 +27,7 @@ import AdminProjects from "./pages/admin/AdminProjects";
 import AdminProposals from "./pages/admin/AdminProposals";
 import AdminReviews from "./pages/admin/AdminReviews";
 
-
+import NotFound from "./pages/NotFound";
 
 function App() {
     return (
@@ -41,11 +42,12 @@ function App() {
                     </Route>
                     <Route path="/onboarding" element={<Onboarding />} />
 
+                    <Route path="/" element={<Landing />} />
 
                     {/* Protected routes with Navbar */}
                     <Route element={<ProtectedRoute />}>
                         <Route element={<Layout />}>
-                            <Route path="/" element={<Home />} />
+                            <Route path="/dasboard" element={<Home />} />
                             <Route path="/projects" element={<Projects />} />
                             <Route path="/projects/:projectId" element={<ProjectDetails />} />
                             <Route path="/my-proposals" element={<MyProposals />} />
@@ -63,6 +65,7 @@ function App() {
                             </Route>
                         </Route>
                     </Route>
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
