@@ -37,7 +37,7 @@ function Login() {
 
       setUser(data.user);
       toast.success("Welcome back! 👋");
-      navigate("/dasboard");
+      navigate("/dashboard");
     } catch (error) {
       console.error(error);
       toast.error("Unable to reach server");

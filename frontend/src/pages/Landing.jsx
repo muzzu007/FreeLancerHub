@@ -71,7 +71,7 @@ function Landing() {
             <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
               {user ? (
                 <Link
-                  to="/dasboard"
+                  to="/dashboard"
                   className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
                 >
                   Go to Dashboard
@@ -169,7 +169,7 @@ function Landing() {
           </p>
           {user ? (
             <Link
-              to="/dasboard"
+              to="/dashboard"
               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg font-semibold text-[#635bff] bg-white hover:shadow-lg hover:shadow-black/10 transition-all duration-200"
             >
               Go to Dashboard
@@ -195,7 +195,7 @@ function Landing() {
               © {new Date().getFullYear()} FreelanceHub. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-gray-500">
-              <Link to="/dasboard" className="hover:text-[#635bff] transition-colors">Home</Link>
+              <Link to="/dashboard" className="hover:text-[#635bff] transition-colors">Home</Link>
               <Link to="/projects" className="hover:text-[#635bff] transition-colors">Projects</Link>
               {!user && (
                 <>

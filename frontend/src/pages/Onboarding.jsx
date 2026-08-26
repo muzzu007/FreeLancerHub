@@ -66,7 +66,7 @@ function Onboarding() {
 
             await refreshUser();
             toast.success("Profile completed! Welcome to FreelanceHub 🎉");
-            navigate("/");
+            navigate("/dashboard");
 
         } catch (error) {
             console.error(error);
@@ -80,10 +80,10 @@ function Onboarding() {
         setSkipping(true);
         try {
             await refreshUser();
-            navigate("/");
+            navigate("/dashboard");
         } catch (error) {
             console.error(error);
-            navigate("/");
+            navigate("/login");
         } finally {
             setSkipping(false);
         }

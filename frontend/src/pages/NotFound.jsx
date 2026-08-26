@@ -21,7 +21,7 @@ function NotFound() {
 
         {/* Home Button */}
         <Link
-          to="/"
+          to="/dashboard"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-white bg-gradient-to-r from-[#635bff] to-[#00d4b2] hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
         >
           <Home size={20} />
