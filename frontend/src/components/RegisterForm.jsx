@@ -52,6 +52,7 @@ function RegisterForm({ role, onBack }) {
       navigate("/onboarding", {
         state: { role, name: name.trim() },
       });
+      
     } catch (error) {
       console.error(error);
       toast.error("Unable to reach server");
