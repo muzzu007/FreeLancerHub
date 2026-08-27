@@ -167,7 +167,7 @@ This project helped me gain practical experience with:
 <!-- Add screenshot here -->
 
 <p align="center">
-  <img src="./screenshots/freelancer_1.png" alt="Freelancer Dashboard" width="800">
+  <img src="./screenshots/freelance_1.png" alt="Freelancer Dashboard" width="800">
 </p>
 
 ### Project & Proposal System
@@ -175,10 +175,10 @@ This project helped me gain practical experience with:
 <!-- Add screenshot here -->
 
 <p align="center">
-  <img src="./screenshots/freelancer_2.png" alt="Project and Proposal System" width="800">
+  <img src="./screenshots/freelance_2.png" alt="Project and Proposal System" width="800">
 </p>
 <p align="center">
-  <img src="./screenshots/freelancer_4.png" alt="Project and Proposal System" width="800">
+  <img src="./screenshots/freelance_4.png" alt="Project and Proposal System" width="800">
 </p>
 
 
@@ -187,7 +187,7 @@ This project helped me gain practical experience with:
 <!-- Add screenshot here -->
 
 <p align="center">
-  <img src="./screenshots/freelancer_7.png" alt="Real-Time Chat" width="800">
+  <img src="./screenshots/freelance_7.png" alt="Real-Time Chat" width="800">
 </p>
 
 ## Project Structure
