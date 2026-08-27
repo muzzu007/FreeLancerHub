@@ -16,8 +16,12 @@ function Onboarding() {
 
     const [displayName, setDisplayName] = useState(
         location.state?.name || user?.name || ""
-    );
 
+
+    );
+    // In Onboarding.jsx
+    // const role = location.state?.role || user?.role;
+    // const displayName = location.state?.name || user?.name || "";
     const [bio, setBio] = useState("");
     const [skills, setSkills] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -43,6 +47,17 @@ function Onboarding() {
         setLoading(true);
 
         try {
+            if (!user) {
+                toast.loading("Authenticating...");
+                await refreshUser();
+                if (!user) {
+                    toast.dismiss();
+                    toast.error("Please log in to complete your profile.");
+                    navigate("/login");
+                    return;
+                }
+                toast.dismiss();
+            }
             const updateData = {
                 name: displayName.trim(),
                 bio: bio.trim()
@@ -65,7 +80,7 @@ function Onboarding() {
             }
 
             await refreshUser();
-            toast.success("Profile completed! Welcome to FreelanceHub 🎉");
+            toast.success("Profile completed!🎉");
             navigate("/dashboard");
 
         } catch (error) {

@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Eye, EyeOff, ArrowLeft, UserPlus } from "lucide-react";
 import apiRequest from "../services/apiRequest";
+import { useAuth } from "../hooks/useAuth";
 
 function RegisterForm({ role, onBack }) {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,7 +33,8 @@ function RegisterForm({ role, onBack }) {
     setLoading(true);
 
     try {
-      const response = await apiRequest("/auth/register", {
+      // 1. Register
+      const registerResponse = await apiRequest("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: name.trim(),
@@ -41,17 +44,31 @@ function RegisterForm({ role, onBack }) {
         }),
       });
 
-      const data = await response.json();
+      const registerData = await registerResponse.json();
 
-      if (!response.ok) {
-        toast.error(data.message);
+      if (!registerResponse.ok) {
+        toast.error(registerData.message);
         return;
       }
 
-      toast.success("Registration successful! Please complete your profile.");
-      navigate("/onboarding", {
-        state: { role, name: name.trim() },
+      toast.success("Account created! Logging you in...");
+      navigate("/onboarding", { state: { role, name: name.trim() } });
+
+      // 2. Auto-login to set cookies
+      const loginResponse = await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
       });
+
+      if (loginResponse.ok) {
+        const loginData = await loginResponse.json();
+        setUser(loginData.user);
+        
+      }
+
       
     } catch (error) {
       console.error(error);
