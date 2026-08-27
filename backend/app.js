@@ -66,6 +66,9 @@ app.use("/proposals", proposalRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/admin", adminRoutes);
 app.use("/conversations", chatRoutes);
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 app.get("/", (req,res)=>{
     res.json({
         message: "Freelance hub is running",
